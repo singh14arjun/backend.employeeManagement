@@ -12,6 +12,7 @@ import com.employee.payload.response.UserResponseDTO;
 import com.employee.repository.AdminRepository;
 import com.employee.service.AdminService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -25,11 +26,10 @@ import java.util.Optional;
 public class AdminServiceImpl implements AdminService {
 
     private final AdminRepository adminRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public APIResponse<UserResponseDTO> createUser(UserRegisterDTO userRegisterDTO) {
-
-
 
         Optional<User> emailUser = adminRepository.findByEmail(userRegisterDTO.getEmail());
 
@@ -46,11 +46,11 @@ public class AdminServiceImpl implements AdminService {
         User newUser = new User();
         newUser.setFirstName(userRegisterDTO.getFirstName());
         newUser.setLastName(userRegisterDTO.getLastName());
-        newUser.setRole(Role.EMPLOYEE);
-        newUser.setDepartment(Department.DEVELOPER);
+        newUser.setRole(Role.ADMIN);
+        newUser.setDepartment(Department.HR);
         newUser.setSalary(userRegisterDTO.getSalary());
         newUser.setEmail(userRegisterDTO.getEmail());
-        newUser.setPassword(userRegisterDTO.getPassword());
+        newUser.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
         newUser.setProfileImage(userRegisterDTO.getProfileImage());
         newUser.setPhoneNumber(userRegisterDTO.getPhoneNumber());
         newUser.setAddress(userRegisterDTO.getAddress());
@@ -62,16 +62,15 @@ public class AdminServiceImpl implements AdminService {
 
         User savedUser = adminRepository.save(newUser);
 
-        UserResponseDTO userResponseDTO=mapToResponse(savedUser);
+        UserResponseDTO userResponseDTO = mapToResponse(savedUser);
 
         return new APIResponse(
                 true,
                 "Employee created successfully",
-                mapToResponse(savedUser)
-        );
+                mapToResponse(savedUser));
     }
 
-    private static  UserResponseDTO mapToResponse(User savedUser) {
+    private static UserResponseDTO mapToResponse(User savedUser) {
         UserResponseDTO userResponseDTO = new UserResponseDTO();
 
         userResponseDTO.setId(savedUser.getId());
@@ -99,8 +98,7 @@ public class AdminServiceImpl implements AdminService {
             return new APIResponse<>(
                     false,
                     "User not found with id: " + id,
-                    null
-            );
+                    null);
         }
 
         UserResponseDTO responseDTO = mapToResponse(optionalUser.get());
@@ -108,30 +106,28 @@ public class AdminServiceImpl implements AdminService {
         return new APIResponse<>(
                 true,
                 "User found",
-                responseDTO
-        );
+                responseDTO);
     }
+
     @Override
     public APIResponse<List<UserResponseDTO>> getAllUser() {
 
         List<User> users = adminRepository.findAll();
 
-        if(users.isEmpty()){
+        if (users.isEmpty()) {
             return new APIResponse<>(
                     true,
                     "No User found",
-                    List.of()
-            );
+                    List.of());
         }
 
-        List<UserResponseDTO> userResponseDTOS=users
+        List<UserResponseDTO> userResponseDTOS = users
                 .stream()
                 .map(AdminServiceImpl::mapToResponse).toList();
         return new APIResponse<>(
                 true,
                 "User list",
-                userResponseDTOS
-        ) ;
+                userResponseDTOS);
     }
 
     @Override
@@ -143,8 +139,7 @@ public class AdminServiceImpl implements AdminService {
             return new APIResponse<>(
                     false,
                     "User not found with id: " + id,
-                    null
-            );
+                    null);
         }
 
         adminRepository.delete(optionalUser.get());
@@ -152,8 +147,7 @@ public class AdminServiceImpl implements AdminService {
         return new APIResponse<>(
                 true,
                 "User deleted successfully.",
-                "Deleted user with ID: " + id
-        );
+                "Deleted user with ID: " + id);
     }
 
     @Override
@@ -194,7 +188,32 @@ public class AdminServiceImpl implements AdminService {
         return new APIResponse<>(
                 true,
                 "User updated successfully.",
-                mapToResponse(updatedUser)
-        );
+                mapToResponse(updatedUser));
+    }
+
+    @Override
+    public APIResponse<String> login(String email, String password) {
+        Optional<User> optionalUser=adminRepository.findByEmail(email);
+                if(optionalUser.isEmpty()){
+                         return new APIResponse<>(
+                        false,
+                        "Invalid email",
+                        null);
+                }
+
+                if(!passwordEncoder.matches(password,optionalUser.get().getPassword())){
+                    return new APIResponse<>(
+                            false,
+                            "Invalid Password"
+                            ,null);
+
+                }
+
+                return  new APIResponse<>(
+                        true,
+                        "Login Successfully",
+                        null
+                );
+
     }
 }

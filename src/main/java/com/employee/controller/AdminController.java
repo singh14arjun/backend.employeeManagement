@@ -1,6 +1,7 @@
 package com.employee.controller;
 
 import com.employee.model.User;
+import com.employee.payload.dto.AdminLoginRequestDTO;
 import com.employee.payload.dto.UserRegisterDTO;
 import com.employee.payload.dto.UserUpdateDTO;
 import com.employee.payload.response.APIResponse;
@@ -65,4 +66,13 @@ public class AdminController {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<APIResponse<String>> login(@Valid @RequestBody AdminLoginRequestDTO adminLoginRequestDTO){
+
+        return  ResponseEntity.ok(
+                adminService.login(adminLoginRequestDTO.getEmail(),adminLoginRequestDTO.getPassword())
+        );
+    }
 }
+
