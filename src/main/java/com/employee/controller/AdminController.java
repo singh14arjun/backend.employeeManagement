@@ -1,5 +1,8 @@
 package com.employee.controller;
 
+import com.employee.constant.Department;
+import com.employee.constant.Gender;
+import com.employee.constant.Role;
 import com.employee.model.User;
 import com.employee.payload.dto.AdminLoginRequestDTO;
 import com.employee.payload.dto.UserRegisterDTO;
@@ -15,10 +18,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/admin/")
+@CrossOrigin(origins = "http://localhost:5173",allowCredentials = "true" )
 public class AdminController {
 
     private  final AdminService adminService;
@@ -34,6 +39,16 @@ public class AdminController {
             @RequestBody UserRegisterDTO userRegisterDTO){
 
         return ResponseEntity.ok(adminService.createUser(userRegisterDTO));
+    }
+
+    @GetMapping("/registration-options")
+    public Map<String, Object> getRegistrationOptions() {
+
+        return Map.of(
+                "roles", Role.values(),
+                "departments", Department.values(),
+                "gender",Gender.values()
+        );
     }
 
     @GetMapping("user/{id}")

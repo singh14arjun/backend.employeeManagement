@@ -5,6 +5,7 @@ import com.employee.constant.TaskPriority;
 import com.employee.constant.TasksStatus;
 import com.employee.payload.dto.CreateTaskRequestDTO;
 import com.employee.payload.dto.UpdateTaskRequestDTO;
+import com.employee.payload.response.APIResponse;
 import com.employee.payload.response.TaskResponseDTO;
 
 import java.util.List;
@@ -12,16 +13,16 @@ import java.util.List;
 public interface TaskService {
 
     // Create
-    TaskResponseDTO createTask(CreateTaskRequestDTO request);
+    APIResponse<TaskResponseDTO> assignTaskToEmployee(CreateTaskRequestDTO createTaskRequestDTO);
 
-    TaskResponseDTO createPersonalTask(CreateTaskRequestDTO request);
+    APIResponse<TaskResponseDTO> createPersonalTask(CreateTaskRequestDTO createTaskRequestDTO);
 
     // Read
-    TaskResponseDTO getTaskById(Long taskId);
+    APIResponse<TaskResponseDTO> getTaskById(Long taskId);
 
-    List<TaskResponseDTO> getAllTasks();
+    APIResponse<List<TaskResponseDTO>> getAllTasks();
 
-    List<TaskResponseDTO> getTasksByUserId(Long userId);
+    APIResponse<List<TaskResponseDTO>> getTasksByUserId(Long userId);
 
     List<TaskResponseDTO> getTasksAssignedByAdmin(Long adminId);
 

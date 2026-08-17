@@ -10,6 +10,7 @@ import com.employee.payload.dto.UserUpdateDTO;
 import com.employee.payload.response.APIResponse;
 import com.employee.payload.response.UserResponseDTO;
 import com.employee.repository.AdminRepository;
+import com.employee.security.JwtService;
 import com.employee.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +28,7 @@ public class AdminServiceImpl implements AdminService {
 
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Override
     public APIResponse<UserResponseDTO> createUser(UserRegisterDTO userRegisterDTO) {
@@ -56,6 +58,7 @@ public class AdminServiceImpl implements AdminService {
         newUser.setAddress(userRegisterDTO.getAddress());
         newUser.setDob(userRegisterDTO.getDob());
         newUser.setGender(userRegisterDTO.getGender());
+        newUser.setJobTitle(userRegisterDTO.getJobTitle());
         newUser.setJoiningDate(LocalDate.now());
         newUser.setCreatedAt(LocalDateTime.now());
         newUser.setUpdatedAt(LocalDateTime.now());
@@ -85,6 +88,7 @@ public class AdminServiceImpl implements AdminService {
         userResponseDTO.setAddress(savedUser.getAddress());
         userResponseDTO.setDob(savedUser.getDob());
         userResponseDTO.setGender(savedUser.getGender());
+        userResponseDTO.setJobTitle(savedUser.getJobTitle());
         userResponseDTO.setJoiningDate(savedUser.getJoiningDate());
         return userResponseDTO;
     }
@@ -193,27 +197,28 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public APIResponse<String> login(String email, String password) {
-        Optional<User> optionalUser=adminRepository.findByEmail(email);
-                if(optionalUser.isEmpty()){
-                         return new APIResponse<>(
-                        false,
-                        "Invalid email",
-                        null);
-                }
+        Optional<User> optionalUser = adminRepository.findByEmail(email);
+        if (optionalUser.isEmpty()) {
+            return new APIResponse<>(
+                    false,
+                    "Invalid email",
+                    null);
+        }
 
-                if(!passwordEncoder.matches(password,optionalUser.get().getPassword())){
-                    return new APIResponse<>(
-                            false,
-                            "Invalid Password"
-                            ,null);
+        if (!passwordEncoder.matches(password, optionalUser.get().getPassword())) {
+            return new APIResponse<>(
+                    false,
+                    "Invalid Password", null);
 
-                }
+        }
 
-                return  new APIResponse<>(
-                        true,
-                        "Login Successfully",
-                        null
-                );
+        String token = jwtService.generateToken(optionalUser.get().getId(),
+                optionalUser.get().getEmail(), optionalUser.get().getRole().name());
+
+        return new APIResponse<>(
+                true,
+                "Login Successfully",
+                token);
 
     }
 }

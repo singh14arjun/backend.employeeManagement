@@ -1,14 +1,16 @@
 package com.employee.payload.response;
 
-
 import com.employee.constant.TaskPriority;
 import com.employee.constant.TasksStatus;
+import com.employee.model.TaskAttachment;
+import com.employee.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -18,9 +20,7 @@ import java.util.List;
 public class TaskResponseDTO {
 
     private Long id;
-
     private String title;
-
     private String description;
 
     private TasksStatus status;
@@ -29,18 +29,11 @@ public class TaskResponseDTO {
 
     private LocalDateTime dueDateAndTime;
 
-    private LocalDateTime createdAt;
+    private LocalDateTime completedAt;
 
-    private LocalDateTime updatedAt;
+    private Long assignedBy;
 
-    // Assigned By
-    private Long assignedById;
-    private String assignedByName;
+    private Long assignedTo;
 
-    // Assigned To
-    private Long assignedToId;
-    private String assignedToName;
-
-    // Attachments
-    private List<TaskAttachmentResponseDTO> attachments;
+    private List<TaskAttachment> taskAttachmentList = new ArrayList<>();
 }

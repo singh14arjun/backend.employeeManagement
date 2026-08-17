@@ -81,6 +81,9 @@ public class User {
     @NotBlank(message = "Gender is required")
     private String gender;
 
+    @NotBlank(message = "job title is required")
+    private String jobTitle;
+
     @NotNull(message = "Joining date is required")
     private LocalDate joiningDate;
 

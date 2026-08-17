@@ -44,11 +44,9 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskPriority priority;
 
-    @Enumerated(EnumType.STRING)
-    private AssigendBy assigendBy;
-
     @NotNull(message = "Due date and time is required")
-    @FutureOrPresent(message = "Due date and time must be in the present or future")
+    // @FutureOrPresent(message = "Due date and time must be in the present or
+    // future")
     private LocalDateTime dueDateAndTime;
 
     private LocalDateTime completedAt;

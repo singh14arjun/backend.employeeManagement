@@ -17,6 +17,7 @@ public interface AdminService {
     public APIResponse deleteUser(Long id);
     public APIResponse<UserResponseDTO> updateUser(Long id, UserUpdateDTO userUpdateDTO);
     public APIResponse<String> login(String email, String password);
+
     interface TaskService {
 
         // Create

@@ -25,6 +25,8 @@ public class UserRegisterDTO {
     private String phoneNumber;
     private Address address;
     private LocalDate dob;
+    private String jobTitle;
+
     private String gender;
     private LocalDate joiningDate;
 
