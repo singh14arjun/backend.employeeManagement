@@ -3,11 +3,13 @@ package com.employee.service.impl;
 import com.employee.constant.AssigendBy;
 import com.employee.constant.TaskPriority;
 import com.employee.constant.TasksStatus;
+import com.employee.mapper.TaskMapper;
 import com.employee.model.Task;
 import com.employee.model.User;
 import com.employee.payload.dto.CreateTaskRequestDTO;
 import com.employee.payload.dto.UpdateTaskRequestDTO;
 import com.employee.payload.response.APIResponse;
+import com.employee.payload.response.AssignedUserResponseDTO;
 import com.employee.payload.response.TaskResponseDTO;
 import com.employee.payload.response.UserResponseDTO;
 import com.employee.repository.AdminRepository;
@@ -16,10 +18,13 @@ import com.employee.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.http.parser.Priority;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -28,17 +33,18 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final AdminRepository adminRepository;
 
+    private final TaskMapper taskMapper ;
+
     @Override
     public APIResponse<TaskResponseDTO> assignTaskToEmployee(CreateTaskRequestDTO createTaskRequestDTO) {
 
-        User assignedBy=adminRepository.findById(createTaskRequestDTO.getAssignedBy())
-                .orElseThrow(()->new RuntimeException("assigned by user not found"));
+        User assignedBy = adminRepository.findById(createTaskRequestDTO.getAssignedBy())
+                .orElseThrow(() -> new RuntimeException("assigned by user not found"));
 
-        User assignedTo=adminRepository.findById(createTaskRequestDTO.getAssignedTo())
-                .orElseThrow(()->new RuntimeException("assigned by user not found"));
+        User assignedTo = adminRepository.findById(createTaskRequestDTO.getAssignedTo())
+                .orElseThrow(() -> new RuntimeException("assigned by user not found"));
 
-
-        Task task=new Task();
+        Task task = new Task();
         task.setTitle(createTaskRequestDTO.getTitle());
         task.setDescription(createTaskRequestDTO.getDescription());
         task.setPriority(TaskPriority.LOW);
@@ -57,16 +63,44 @@ public class TaskServiceImpl implements TaskService {
 
         return new APIResponse<>(
                 true,
-                "Task assigened to employee successfully. Task Id : "+savedTask.getId()+" and name of employee is "+assignedTo.getFirstName(),
-                         taskResponseDTO
-                );
+                "Task assigned to employee successfully. Task Id : " + savedTask.getId() + " and name of employee is "
+                        + assignedTo.getFirstName(),
+                taskResponseDTO);
     }
 
     @Override
-    public APIResponse<TaskResponseDTO> createPersonalTask(CreateTaskRequestDTO request) {
-        return null ;
+    public APIResponse<TaskResponseDTO> createPersonalTask(CreateTaskRequestDTO createTaskRequestDTO) {
+        User assignedBy = adminRepository.findById(createTaskRequestDTO.getAssignedBy())
+                .orElseThrow(() -> new RuntimeException("assigned by user not found"));
+
+        User assignedTo = adminRepository.findById(createTaskRequestDTO.getAssignedTo())
+                .orElseThrow(() -> new RuntimeException("assigned by user not found"));
+
+        Task task = new Task();
+        task.setTitle(createTaskRequestDTO.getTitle());
+        task.setDescription(createTaskRequestDTO.getDescription());
+        task.setPriority(TaskPriority.LOW);
+        task.setDueDateAndTime(LocalDateTime.now());
+        task.setStatus(TasksStatus.PENDING);
+        task.setAssignedBy(assignedBy);
+        task.setAssignedTo(assignedTo);
+        task.setCompletedAt(createTaskRequestDTO.getCompletedAt());
+        task.setTaskAttachmentList(createTaskRequestDTO.getTaskAttachmentList());
+        task.setCreatedAt(LocalDateTime.now());
+        task.setUpdatedAt(LocalDateTime.now());
+
+        Task savedTask = taskRepository.save(task);
+
+        TaskResponseDTO taskResponseDTO = mapToTaskResponseDTO(savedTask);
+
+        return new APIResponse<>(
+                true,
+                "Task assigned to self successfully. Task Id : " + savedTask.getId() + " and name of employee is "
+                        + assignedTo.getFirstName(),
+                taskResponseDTO);
+
     }
-  
+
     @Override
     public APIResponse<TaskResponseDTO> getTaskById(Long taskId) {
         return null;
@@ -74,11 +108,26 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public APIResponse<List<TaskResponseDTO>> getAllTasks() {
-        return null;
+        List<Task> tasks = taskRepository.findAll();
+
+        if (tasks.isEmpty()) {
+            return new APIResponse<>(
+                    true,
+                    "No Task Found",
+                    List.of());
+        }
+
+        List<TaskResponseDTO> taskResponseDTOS = tasks
+                .stream().map(TaskServiceImpl::mapToTaskResponseDTO).toList();
+
+        return new APIResponse<>(
+                true,
+                "Task List",
+                taskResponseDTOS);
     }
 
     @Override
-    public APIResponse<List<TaskResponseDTO>> getTasksByUserId(Long userId) {
+    public APIResponse<List<TaskResponseDTO>> getAllTasksByUserId(Long userId) {
         return null;
     }
 
@@ -93,8 +142,22 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public TaskResponseDTO updateTask(Long taskId, UpdateTaskRequestDTO request) {
-        return null;
+    public APIResponse<TaskResponseDTO> editTask(Long taskId, UpdateTaskRequestDTO request) {
+
+        Task exitingTask = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
+
+        taskMapper.updateTaskFromDto(request, exitingTask);
+
+        Task savedTask = taskRepository.save(exitingTask);
+
+        TaskResponseDTO taskResponseDTO = mapToTaskResponseDTO(savedTask);
+
+        return new APIResponse<>(
+                true,
+                "Task updated successfully. Task Id : " + savedTask.getId() + " and name of employee is "
+                        + savedTask.getAssignedTo().getFirstName(),
+                taskResponseDTO);
     }
 
     @Override
@@ -103,8 +166,24 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public void deleteTask(Long taskId) {
+    public APIResponse<String> deleteTask(Long taskId) {
 
+        Optional<Task> task=taskRepository.findById(taskId);
+
+        if(task.isEmpty()) {
+            return new APIResponse<>(
+                    false, "Task not founded with id : " + taskId,
+                    null
+            );
+        }
+            taskRepository.delete(task.get());
+
+
+
+        return new APIResponse<>(
+                true,
+                "Task Deleted successfully.",
+                "Deleted task with id : " + taskId);
     }
 
     @Override
@@ -147,7 +226,7 @@ public class TaskServiceImpl implements TaskService {
         return null;
     }
 
-    private TaskResponseDTO mapToTaskResponseDTO(Task task) {
+    private static TaskResponseDTO mapToTaskResponseDTO(Task task) {
 
         TaskResponseDTO taskResponseDTO = new TaskResponseDTO();
 
@@ -157,8 +236,32 @@ public class TaskServiceImpl implements TaskService {
         taskResponseDTO.setPriority(task.getPriority());
         taskResponseDTO.setDueDateAndTime(task.getDueDateAndTime());
         taskResponseDTO.setStatus(task.getStatus());
-        taskResponseDTO.setAssignedBy(task.getAssignedBy() != null ? task.getAssignedBy().getId():null);
-        taskResponseDTO.setAssignedTo(task.getAssignedTo() != null ?task.getAssignedTo().getId():null);
+        if (task.getAssignedTo() != null) {
+
+            User employee = task.getAssignedTo();
+
+            AssignedUserResponseDTO assignedTo = new AssignedUserResponseDTO();
+
+            assignedTo.setId(employee.getId());
+            assignedTo.setFirstName(employee.getFirstName());
+            assignedTo.setLastName(employee.getLastName());
+            assignedTo.setProfileImage(employee.getProfileImage());
+
+            taskResponseDTO.setAssignedTo(assignedTo);
+        }
+        if (task.getAssignedBy() != null) {
+
+            User admin = task.getAssignedBy();
+
+            AssignedUserResponseDTO assignedBy = new AssignedUserResponseDTO();
+
+            assignedBy.setId(admin.getId());
+            assignedBy.setFirstName(admin.getFirstName());
+            assignedBy.setLastName(admin.getLastName());
+            assignedBy.setProfileImage(admin.getProfileImage());
+
+            taskResponseDTO.setAssignedBy(assignedBy);
+        }
         taskResponseDTO.setCompletedAt(task.getCompletedAt());
         taskResponseDTO.setTaskAttachmentList(task.getTaskAttachmentList());
 

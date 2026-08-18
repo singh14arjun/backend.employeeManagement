@@ -31,9 +31,8 @@ public class TaskResponseDTO {
 
     private LocalDateTime completedAt;
 
-    private Long assignedBy;
-
-    private Long assignedTo;
+    private AssignedUserResponseDTO assignedTo;
+    private AssignedUserResponseDTO assignedBy;
 
     private List<TaskAttachment> taskAttachmentList = new ArrayList<>();
 }

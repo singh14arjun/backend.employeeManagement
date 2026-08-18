@@ -197,28 +197,42 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public APIResponse<String> login(String email, String password) {
-        Optional<User> optionalUser = adminRepository.findByEmail(email);
+
+        Optional<User> optionalUser =
+                adminRepository.findByEmail(email);
+
         if (optionalUser.isEmpty()) {
+
             return new APIResponse<>(
                     false,
                     "Invalid email",
-                    null);
+                    null
+            );
         }
 
-        if (!passwordEncoder.matches(password, optionalUser.get().getPassword())) {
+        User user = optionalUser.get();
+
+        if (!passwordEncoder.matches(
+                password,
+                user.getPassword()
+        )) {
+
             return new APIResponse<>(
                     false,
-                    "Invalid Password", null);
-
+                    "Invalid Password",
+                    null
+            );
         }
 
-        String token = jwtService.generateToken(optionalUser.get().getId(),
-                optionalUser.get().getEmail(), optionalUser.get().getRole().name());
+        String token = jwtService.generateToken(
+                user.getId(),
+                user.getEmail(),
+                user.getRole().name()
+        );
 
         return new APIResponse<>(
                 true,
                 "Login Successfully",
-                token);
-
-    }
-}
+                token
+        );
+    }}

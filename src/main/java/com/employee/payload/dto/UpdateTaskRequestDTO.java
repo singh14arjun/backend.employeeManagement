@@ -1,11 +1,13 @@
 package com.employee.payload.dto;
 
-
 import com.employee.constant.TaskPriority;
-import jakarta.validation.constraints.Future;
+import com.employee.constant.TasksStatus;
+import com.employee.model.TaskAttachment;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -14,11 +16,18 @@ import java.time.LocalDateTime;
 public class UpdateTaskRequestDTO {
 
     private String title;
-
     private String description;
+
+    private TasksStatus status;
 
     private TaskPriority priority;
 
-    @Future(message = "Due date must be in the future")
     private LocalDateTime dueDateAndTime;
+
+    private LocalDateTime completedAt;
+
+    private Long assignedTo;
+    private Long assignedBy;
+
+    private List<TaskAttachment> taskAttachmentList = new ArrayList<>();
 }

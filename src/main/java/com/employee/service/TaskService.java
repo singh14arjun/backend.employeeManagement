@@ -22,19 +22,19 @@ public interface TaskService {
 
     APIResponse<List<TaskResponseDTO>> getAllTasks();
 
-    APIResponse<List<TaskResponseDTO>> getTasksByUserId(Long userId);
+    APIResponse<List<TaskResponseDTO>> getAllTasksByUserId(Long userId);
 
     List<TaskResponseDTO> getTasksAssignedByAdmin(Long adminId);
 
     List<TaskResponseDTO> getPersonalTasks(Long userId);
 
     // Update
-    TaskResponseDTO updateTask(Long taskId, UpdateTaskRequestDTO request);
+    APIResponse<TaskResponseDTO> editTask(Long taskId, UpdateTaskRequestDTO request);
 
     TaskResponseDTO updateTaskStatus(Long taskId, TasksStatus status);
 
     // Delete
-    void deleteTask(Long taskId);
+    APIResponse deleteTask(Long taskId);
 
     // Search & Filter
     List<TaskResponseDTO> searchTasks(String keyword);

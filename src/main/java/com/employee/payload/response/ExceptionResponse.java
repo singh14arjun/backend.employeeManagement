@@ -16,4 +16,7 @@ public class ExceptionResponse {
     private  String message;
     private  String error;
     private LocalDateTime timeStamp;
+
+    public static class AssignedUserResponseDTO {
+    }
 }

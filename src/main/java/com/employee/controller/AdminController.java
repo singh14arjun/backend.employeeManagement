@@ -28,10 +28,6 @@ public class AdminController {
 
     private  final AdminService adminService;
 
-    @GetMapping("/message")
-    public  String message(){
-        return "Hello World";
-    }
 
     @PostMapping("register")
     public ResponseEntity<APIResponse<UserResponseDTO>> resigterUser(
