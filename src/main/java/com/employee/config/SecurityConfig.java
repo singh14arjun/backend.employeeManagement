@@ -82,6 +82,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/admin/**"
                         ).hasRole("ADMIN")
+                        .requestMatchers("/api/employee/tasks/**")
+                        .permitAll()
 
                         // All other APIs require login
                         .anyRequest().authenticated()

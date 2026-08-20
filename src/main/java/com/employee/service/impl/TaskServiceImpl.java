@@ -70,6 +70,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public APIResponse<TaskResponseDTO> createPersonalTask(CreateTaskRequestDTO createTaskRequestDTO) {
+
         User assignedBy = adminRepository.findById(createTaskRequestDTO.getAssignedBy())
                 .orElseThrow(() -> new RuntimeException("assigned by user not found"));
 
@@ -128,7 +129,31 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public APIResponse<List<TaskResponseDTO>> getAllTasksByUserId(Long userId) {
-        return null;
+        User user = adminRepository.findById(userId)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found with id: " + userId)
+                );
+
+        List<Task> tasks=taskRepository.findByAssignedToId(userId);
+
+        if(tasks.isEmpty()){
+            return new APIResponse<>(
+                    true,
+                    "No task founded with id : "+userId,
+                    List.of()
+            );
+        }
+
+        List<TaskResponseDTO> taskResponseDTOS=tasks.stream()
+                .map(TaskServiceImpl::mapToTaskResponseDTO)
+                .toList();
+
+
+        return new APIResponse<>(
+                true,
+                "All task list for id : " + userId ,
+                taskResponseDTOS
+        );
     }
 
     @Override

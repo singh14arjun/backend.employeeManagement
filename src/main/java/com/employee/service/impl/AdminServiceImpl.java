@@ -48,8 +48,8 @@ public class AdminServiceImpl implements AdminService {
         User newUser = new User();
         newUser.setFirstName(userRegisterDTO.getFirstName());
         newUser.setLastName(userRegisterDTO.getLastName());
-        newUser.setRole(Role.ADMIN);
-        newUser.setDepartment(Department.HR);
+        newUser.setRole(Role.EMPLOYEE);
+        newUser.setDepartment(userRegisterDTO.getDepartment());
         newUser.setSalary(userRegisterDTO.getSalary());
         newUser.setEmail(userRegisterDTO.getEmail());
         newUser.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
